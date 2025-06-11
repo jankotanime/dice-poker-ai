@@ -1,20 +1,38 @@
-## Etap 1 – Trenowanie modelu do rozpoznawania jednej kostki do gry
-Celem tego etapu projektu było stworzenie modelu sztucznej inteligencji, który na podstawie zdjęcia pojedynczej kostki do gry będzie potrafił rozpoznać liczbę oczek (od 1 do 6).
+# Dice poker ai
 
-Do trenowania modelu wykorzystałem zbiór danych znajdujący się w katalogu train/image/one-dice, który zawierał łącznie 133 zdjęcia kostek, podzielonych na sześć klas odpowiadających liczbie oczek. Dane zostały uporządkowane w strukturze katalogów (dice-1 do dice-6), a wszystkie obrazy zostały automatycznie przeskalowane do rozmiaru 128x128 pikseli. Zbiór danych został podzielony w proporcji 80:20 – 109 zdjęć przeznaczono na trening, a 24 na walidację.
+## Jan Gasztold, Uniwersytet Gdański, Wydział Matematyki Fizyki i Informatyki, Informatyka praktyczna rok 2, Data: 11.06.2025
 
-Do zbudowania modelu wykorzystałem prostą konwolucyjną sieć neuronową (CNN) zawierającą trzy warstwy konwolucyjne z max poolingiem, warstwę Flatten oraz w pełni połączoną warstwę Dense. Na końcu model posiada sześć neuronów wyjściowych z funkcją aktywacji softmax, pozwalającą na klasyfikację do jednej z sześciu klas. Jako funkcję kosztu zastosowano categorical_crossentropy, a optymalizacja przebiegała z użyciem algorytmu Adam. Model trenowany był przez 10 epok z rozmiarem batcha równym 32. Proces treningu odbywał się z użyciem TensorFlow na CPU.
+## Spis treści
 
-Podczas eksperymentów analizowałem wpływ różnych parametrów na skuteczność modelu, w tym liczbę warstw i parametrów konwolucyjnych. Przeprowadziłem kilka iteracji treningu, aby dobrać odpowiednie ustawienia. Obserwowałem dokładność i stratę zarówno dla danych treningowych, jak i walidacyjnych w każdej epoce.
+1. [Spis treści](#spis-treści)
+2. [Wprowadzenie](#wprowadzenie)
+3. [Etapy realizacji](#etapy-realizacji)
+3. [Etap 1](#etap-1---przygotowanie-do-projektu)
+4. [Etap 2](#etap-2)
+5. [Etap 3](#etap-3)
+6. [Etap 4](#etap-4)
+10. [Tesotowanie](#)
+11. [Funkcjonalności](#)
+12. [Problemy i wyzwania](#)
+13. [Podsumowanie](#)
+14. [Załączniki](#załączniki)
 
-Na podstawie wyników można zauważyć, że model stopniowo uczył się danych treningowych – dokładność treningowa wzrosła z około 13% do 52%, a strata spadła z 1.86 do 1.25. Niestety, dokładność na zbiorze walidacyjnym była niestabilna i oscylowała w przedziale 12–29%, ostatecznie spadając do poziomu około 16%. Wartości strat dla walidacji wzrastały, co sugeruje występowanie przeuczenia (overfittingu).
+## Wprowadzenie
+### Opis projektu
+...
+### Cel projektu
+Celem projektu jest stworzenie programu zdolnego do klasyfikacji kości do gry na podstawie obrazu, a następnie oszacowania opłacalności gry. Program powinien mieć zdolność podejmowania decyzji o ryzyku w zależności od warunków otoczenia.
 
-Na tym etapie wyciągnąłem następujące wnioski:
+## Etapy realizacji
+### Etap 1 - przygotowanie do projektu
+Prace rozpocząłem od wyboru technologii, w której zrealizuję projekt. Zdecydowałem się na Pythona ze względu na szeroki ekosystem bibliotek oraz moje doświadczenie z tą technologią. Projekt realizowałem w środowisku WSL2 na systemie Windows 11, w wersji Pythona 3.10.12. Główną biblioteką używaną do budowy modelu był Keras.
 
-Model jest zbyt dopasowany do danych treningowych i nie generalizuje dobrze do nowych danych.
+### Etap 2 - przygotowanie środowiska
+Skorzystałem z ogólnodostępnych datasetów zdjęć kości do gry. Zebrałem około 2000 zdjęć przedstawiających różne układy kostek z różnych perspektyw [zobacz załączniki](#załączniki). Następnie przygotowałem strukturę projektu oraz odpowiednio skonfigurowałem `.gitignore`.
 
-Głównym ograniczeniem jest zbyt mały zbiór danych oraz brak augmentacji obrazów.
+### Etap 3 - trenowanie rozpoznawania jednej kości
+Celem tego etapu było stworzenie modelu AI, który rozpoznaje liczbę oczek (1–6) na pojedynczej kostce. Eksperymentowałem z różnymi parametrami augmentacji oraz architektury CNN. W Trialu 10 zastosowałem 2 warstwy Conv2D (32 i 64 filtry), dropout 0.3 oraz lekką augmentację. Ten wariant okazał się najskuteczniejszy – zarówno accuracy na zbiorze walidacyjnym, jak i treningowym rosło stabilnie bez oznak przeuczenia.
 
-W kolejnych krokach należy wprowadzić augmentację danych (np. obrót, skalowanie, zmiana jasności) oraz rozważyć zastosowanie bardziej złożonej architektury modelu lub transfer learningu (np. z użyciem MobileNetV2).
 
-W dalszej części projektu planuję rozszerzyć zbiór danych poprzez augmentację oraz przeprowadzić trening z użyciem tych danych, aby sprawdzić wpływ sztucznego zwiększenia zbioru uczącego na zdolność modelu do generalizacji.
+
+## Załączniki
