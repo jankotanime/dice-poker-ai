@@ -1,1 +1,3 @@
-train/images/
+train/image/
+raport/train-*
+model/train-*
