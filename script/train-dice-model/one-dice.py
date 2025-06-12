@@ -21,11 +21,11 @@ def create_model(filters=[32, 64, 128], dropout=0.3):
 
 IMG_SIZE = (224, 224)
 BATCH_SIZE = 32
-EPOCHS = 30
+EPOCHS = 50
 DATASET_PATH = 'train/image/one-dice'
-MODEL_SAVE_PATH = 'model/train-dice-model/one-dice'
+MODEL_SAVE_PATH = 'model/dice-model/one-dice'
 RAPORT_SAVE_PATH = 'raport/train-dice-model/one-dice'
-TRIAL = 10
+TRIAL = 14
 
 datagen = ImageDataGenerator(
     rescale=1./255,
@@ -33,10 +33,10 @@ datagen = ImageDataGenerator(
     rotation_range=10,
     width_shift_range=0.05,
     height_shift_range=0.05,
-    shear_range=0.0,
-    zoom_range=0.0,
+    shear_range=0.05,
+    zoom_range=0.05,
     horizontal_flip=True,
-    # brightness_range=[0.9, 1.1],
+    brightness_range=[0.8, 1.2],
     fill_mode='nearest'
 )
 
@@ -76,7 +76,7 @@ history = model.fit(
     callbacks=callbacks
 )
 
-model.save(os.path.join(MODEL_SAVE_PATH, "dice-model-one-dice-trial-"+str(TRIAL)+".keras"))
+model.save(os.path.join(MODEL_SAVE_PATH, "trial-"+str(TRIAL)+".keras"))
 
 print(f'Model zapisany')
 

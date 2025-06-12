@@ -19,14 +19,14 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 IMG_SIZE = (224, 224)
 BATCH_SIZE = 32
-EPOCHS = 30
-TRIAL = 9
+EPOCHS = 300
+TRIAL = 21
 NUM_CLASSES = 21
 
-ONE_DICE_MODEL_PATH = 'model/dice-model/best-model/best-one-dice.keras'
+ONE_DICE_MODEL_PATH = 'model/dice-model/two-dices/best-dice-model-trial-20.keras'
 DATASET_PATH = 'train/image/two-dices/images'
 ANNOTATION_FILE = 'train/image/two-dices/rolls.xml'
-MODEL_SAVE_PATH = 'model/dice-model/train/two-dices'
+MODEL_SAVE_PATH = 'model/dice-model/two-dices'
 RAPORT_SAVE_PATH = 'raport/train-dice-model/two-dices'
 
 os.makedirs(MODEL_SAVE_PATH, exist_ok=True)
@@ -44,12 +44,13 @@ except NameError:
     print("Uwaga: nie można zapisać kopii skryptu (__file__ nie istnieje)")
 
 train_datagen = ImageDataGenerator(
-    rotation_range=15,
-    width_shift_range=0.1,
-    height_shift_range=0.1,
-    shear_range=10,
-    zoom_range=0.1,
-    brightness_range=[0.8, 1.2],
+    rotation_range=25,
+    width_shift_range=0.15,
+    height_shift_range=0.15,
+    shear_range=20,
+    zoom_range=[0.9, 1.1],
+    brightness_range=[0.7, 1.3],
+    channel_shift_range=10.0,
     horizontal_flip=True,
     vertical_flip=False,
     fill_mode='nearest',
