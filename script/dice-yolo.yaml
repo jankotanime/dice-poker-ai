@@ -1,0 +1,5 @@
+train: /content/drive/MyDrive/projekty/dice-poker-ai/one-dice-yolo/images/train
+val: /content/drive/MyDrive/projekty/dice-poker-ai/one-dice-yolo/images/val
+
+nc: 6
+names: ['0', '1', '2', '3', '4', '5'] 
