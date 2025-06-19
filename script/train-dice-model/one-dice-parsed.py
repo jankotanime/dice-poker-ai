@@ -16,19 +16,23 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from tensorflow.keras.utils import to_categorical, Sequence
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
 from tensorflow.keras.regularizers import l2
+from tensorflow.keras.callbacks import ReduceLROnPlateau
 
 IMG_SIZE = (224, 224)
 BATCH_SIZE = 32
 EPOCHS = 100
-TRIAL = 6
+TRIAL = 3
 NUM_CLASSES = 6
 USE_MIXUP = True
 USE_CUTMIX = False
 ALPHA = 0.2
 
-TRAIN_IMAGES_DIR = 'train/image/dice-xml-parsed'
-MODEL_SAVE_PATH = f'model/dice-model/dice-xml-parsed'
-RAPORT_SAVE_PATH = f'raport/train-dice-model/dice-xml-parsed'
+TRAIN_IMAGES_DIR = 'train/image/one-dice-parsed'
+MODEL_SAVE_PATH = f'model/dice-model/one-dice-parsed'
+RAPORT_SAVE_PATH = f'raport/train-dice-model/one-dice-parsed'
+
+saved_model = os.path.join(f"model/dice-model/best-train/best-dice-xml.keras")
+
 
 os.makedirs(RAPORT_SAVE_PATH, exist_ok=True)
 for sub in ['image', 'history', 'class', 'script']:
@@ -125,25 +129,32 @@ class DiceDataGenerator(Sequence):
 train_gen = DiceDataGenerator(X_train, y_train, BATCH_SIZE, IMG_SIZE, NUM_CLASSES, mixup=USE_MIXUP, cutmix=USE_CUTMIX, alpha=ALPHA)
 val_gen = DiceDataGenerator(X_val, y_val, BATCH_SIZE, IMG_SIZE, NUM_CLASSES, shuffle=False, augment=False)
 
-base_model = MobileNetV2(weights='imagenet', include_top=False, input_shape=(*IMG_SIZE, 3))
-for layer in base_model.layers[:-30]:
-    layer.trainable = False
-for layer in base_model.layers[-30:]:
-    layer.trainable = True
+checkpoint_path = os.path.join(MODEL_SAVE_PATH, f"best-dice-model-trial-{TRIAL}.keras")
 
-x = base_model.output
-x = GlobalAveragePooling2D()(x)
-x = Dense(256, activation='relu', kernel_regularizer=l2(0.001))(x)
-x = Dropout(0.4)(x)
-predictions = Dense(NUM_CLASSES, activation='softmax')(x)
-model = Model(inputs=base_model.input, outputs=predictions)
+if os.path.exists(saved_model):
+    print(f"Ładowanie istniejącego modelu z: {saved_model}")
+    model = tf.keras.models.load_model(saved_model)
+else:
+    print("Tworzenie nowego modelu od podstaw.")
+    base_model = MobileNetV2(weights='imagenet', include_top=False, input_shape=(*IMG_SIZE, 3))
+    for layer in base_model.layers[:-60]:
+        layer.trainable = False
+    for layer in base_model.layers[-60:]:
+        layer.trainable = True
+
+    x = base_model.output
+    x = GlobalAveragePooling2D()(x)
+    x = Dense(512, activation='relu', kernel_regularizer=l2(0.002))(x)
+    x = Dropout(0.5)(x)
+    predictions = Dense(NUM_CLASSES, activation='softmax')(x)
+    model = Model(inputs=base_model.input, outputs=predictions)
 
 model.compile(optimizer=Adam(learning_rate=1e-4), loss='categorical_crossentropy', metrics=['accuracy'])
 
-checkpoint_path = os.path.join(MODEL_SAVE_PATH, f"best-dice-model-trial-{TRIAL}.keras")
 callbacks = [
-    EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True),
-    ModelCheckpoint(checkpoint_path, monitor='val_loss', save_best_only=True)
+    EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True),
+    ModelCheckpoint(checkpoint_path, monitor='val_loss', save_best_only=True),
+    ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=5, min_lr=1e-6, verbose=1)
 ]
 
 history = model.fit(train_gen, validation_data=val_gen, epochs=EPOCHS, callbacks=callbacks)

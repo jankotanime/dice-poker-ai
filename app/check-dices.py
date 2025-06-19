@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 YOLO_MODEL_PATH = 'model/dice-model/best-train/best-yolo.pt'
 IMAGE_PATH = 'app/input-data/image.png'
-CLASSIFIER_MODEL_PATH = 'model/dice-model/best-train/best-dice-xml.keras'
+CLASSIFIER_MODEL_PATH = 'model/dice-model/best-train/best-one-dice.keras'
 OUTPUT_IMAGE_PATH = 'app/output-data/image-with-boxes.jpg'
 
 print("Ładowanie YOLO...")
@@ -44,11 +44,11 @@ for i, row in predictions.iterrows():
 
     pred = classifier.predict(array_crop)
     class_id = np.argmax(pred)
+    print(class_id)
     class_name = class_names[class_id]
     confidence = pred[0][class_id]
 
-    print(f"\nObiekt {i+1}:")
-    # print(f"  ➤ YOLO: {yolo_class_name} ({yolo_conf:.2f})")
+    print(f"  ➤ YOLO: {yolo_class_name} ({yolo_conf:.2f})")
     print(f"  ➤ Klasyfikator: {class_name} ({confidence:.2f})")
 
     label = f"{yolo_class_name}/{class_name}"
