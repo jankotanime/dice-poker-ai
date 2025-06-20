@@ -3,6 +3,9 @@ import json
 import shutil
 import numpy as np
 from glob import glob
+import albumentations as A
+from albumentations.core.composition import OneOf
+import cv2
 from PIL import Image
 import matplotlib.pyplot as plt
 import tensorflow as tf
@@ -20,10 +23,10 @@ from tensorflow.keras.regularizers import l2
 IMG_SIZE = (224, 224)
 BATCH_SIZE = 32
 EPOCHS = 100
-TRIAL = 6
+TRIAL = 5
 NUM_CLASSES = 6
-USE_MIXUP = True
-USE_CUTMIX = False
+USE_MIXUP = False
+USE_CUTMIX = True
 ALPHA = 0.2
 
 TRAIN_IMAGES_DIR = 'train/image/dice-xml-parsed'
@@ -34,6 +37,14 @@ os.makedirs(RAPORT_SAVE_PATH, exist_ok=True)
 for sub in ['image', 'history', 'class', 'script']:
     os.makedirs(os.path.join(RAPORT_SAVE_PATH, sub), exist_ok=True)
 os.makedirs(MODEL_SAVE_PATH, exist_ok=True)
+
+try:
+    current_script = __file__
+    script_copy_path = os.path.join(RAPORT_SAVE_PATH, 'script/trial-'+str(TRIAL)+'.py')
+    shutil.copyfile(current_script, script_copy_path)
+    print(f'Kopia skryptu zapisana')
+except NameError:
+    print("Uwaga: nie można zapisać kopii skryptu")
 
 class_names = sorted([d for d in os.listdir(TRAIN_IMAGES_DIR) if os.path.isdir(os.path.join(TRAIN_IMAGES_DIR, d))])
 class_to_idx = {cls: idx for idx, cls in enumerate(class_names)}
@@ -67,6 +78,16 @@ class DiceDataGenerator(Sequence):
         self.cutmix = cutmix
         self.alpha = alpha
         self.on_epoch_end()
+        self.augmenter = A.Compose([
+            A.HorizontalFlip(p=0.5),
+            A.VerticalFlip(p=0.2),
+            A.Rotate(limit=15, p=0.5),
+            A.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.0, hue=0.0, p=0.5),
+            A.OneOf([
+                A.GaussianBlur(blur_limit=(3, 5), p=0.5),
+                A.MotionBlur(blur_limit=3, p=0.5)
+            ], p=0.0),
+        ])
 
     def __len__(self):
         return int(np.ceil(len(self.image_paths) / self.batch_size))
@@ -76,12 +97,31 @@ class DiceDataGenerator(Sequence):
         if self.shuffle:
             np.random.shuffle(self.indices)
 
+    def augment_image(self, image):
+        image = tf.image.random_flip_left_right(image)
+        image = tf.image.random_flip_up_down(image)
+        image = tf.image.random_brightness(image, max_delta=0.1)
+        image = tf.image.random_contrast(image, lower=0.9, upper=1.1)
+        return image
+
+
     def __getitem__(self, index):
         idxs = self.indices[index * self.batch_size:(index + 1) * self.batch_size]
         batch_x = [self.image_paths[i] for i in idxs]
         batch_y = [self.labels[i] for i in idxs]
 
-        images = np.array([preprocess_input(img_to_array(load_img(p, target_size=self.img_size))) for p in batch_x])
+        images = []
+        for p in batch_x:
+            img = load_img(p, target_size=self.img_size)
+            img = img_to_array(img).astype(np.uint8)
+
+            if self.augment:
+                augmented = self.augmenter(image=img)
+                img = augmented["image"]
+
+            images.append(img)
+
+        images = np.stack(images).astype(np.float32) / 255.0
         labels = to_categorical(batch_y, num_classes=self.num_classes)
 
         if self.mixup:
@@ -134,7 +174,7 @@ for layer in base_model.layers[-30:]:
 x = base_model.output
 x = GlobalAveragePooling2D()(x)
 x = Dense(256, activation='relu', kernel_regularizer=l2(0.001))(x)
-x = Dropout(0.4)(x)
+x = Dropout(0.5)(x)
 predictions = Dense(NUM_CLASSES, activation='softmax')(x)
 model = Model(inputs=base_model.input, outputs=predictions)
 

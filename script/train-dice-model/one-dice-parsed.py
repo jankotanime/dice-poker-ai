@@ -17,11 +17,13 @@ from tensorflow.keras.utils import to_categorical, Sequence
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.callbacks import ReduceLROnPlateau
+from sklearn.utils.class_weight import compute_class_weight
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 IMG_SIZE = (224, 224)
 BATCH_SIZE = 32
 EPOCHS = 100
-TRIAL = 3
+TRIAL = 15
 NUM_CLASSES = 6
 USE_MIXUP = True
 USE_CUTMIX = False
@@ -31,105 +33,43 @@ TRAIN_IMAGES_DIR = 'train/image/one-dice-parsed'
 MODEL_SAVE_PATH = f'model/dice-model/one-dice-parsed'
 RAPORT_SAVE_PATH = f'raport/train-dice-model/one-dice-parsed'
 
-saved_model = os.path.join(f"model/dice-model/best-train/best-dice-xml.keras")
-
+saved_model = os.path.join(f"model/dice-model/dice-xml-parsed/best-dice-model-trial-4.keras")
 
 os.makedirs(RAPORT_SAVE_PATH, exist_ok=True)
 for sub in ['image', 'history', 'class', 'script']:
     os.makedirs(os.path.join(RAPORT_SAVE_PATH, sub), exist_ok=True)
 os.makedirs(MODEL_SAVE_PATH, exist_ok=True)
 
-class_names = sorted([d for d in os.listdir(TRAIN_IMAGES_DIR) if os.path.isdir(os.path.join(TRAIN_IMAGES_DIR, d))])
-class_to_idx = {cls: idx for idx, cls in enumerate(class_names)}
+datagen = ImageDataGenerator(
+    rescale=1./255,
+    validation_split=0.2,
+    rotation_range=10,
+    width_shift_range=0.05,
+    height_shift_range=0.05,
+    shear_range=0.05,
+    zoom_range=0.05,
+    horizontal_flip=True,
+    brightness_range=[0.8, 1.2],
+    fill_mode='nearest'
+)
 
-image_paths = []
-labels = []
+train_generator = datagen.flow_from_directory(
+    TRAIN_IMAGES_DIR,
+    target_size=IMG_SIZE,
+    batch_size=BATCH_SIZE,
+    class_mode='categorical',
+    subset='training',
+    shuffle=True
+)
 
-for cls in class_names:
-    cls_folder = os.path.join(TRAIN_IMAGES_DIR, cls)
-    for ext in ('*.jpg', '*.jpeg', '*.png'):
-        for path in glob(os.path.join(cls_folder, ext)):
-            image_paths.append(path)
-            labels.append(class_to_idx[cls])
-
-image_paths = np.array(image_paths)
-labels = np.array(labels)
-
-X_train, X_val, y_train, y_val = train_test_split(image_paths, labels, test_size=0.2, stratify=labels, random_state=42)
-
-class DiceDataGenerator(Sequence):
-    def __init__(self, image_paths, labels, batch_size, img_size, num_classes, 
-                 shuffle=True, augment=True, mixup=False, cutmix=False, alpha=0.2):
-        self.image_paths = image_paths
-        self.labels = labels
-        self.batch_size = batch_size
-        self.img_size = img_size
-        self.num_classes = num_classes
-        self.shuffle = shuffle
-        self.augment = augment
-        self.mixup = mixup
-        self.cutmix = cutmix
-        self.alpha = alpha
-        self.on_epoch_end()
-
-    def __len__(self):
-        return int(np.ceil(len(self.image_paths) / self.batch_size))
-
-    def on_epoch_end(self):
-        self.indices = np.arange(len(self.image_paths))
-        if self.shuffle:
-            np.random.shuffle(self.indices)
-
-    def __getitem__(self, index):
-        idxs = self.indices[index * self.batch_size:(index + 1) * self.batch_size]
-        batch_x = [self.image_paths[i] for i in idxs]
-        batch_y = [self.labels[i] for i in idxs]
-
-        images = np.array([preprocess_input(img_to_array(load_img(p, target_size=self.img_size))) for p in batch_x])
-        labels = to_categorical(batch_y, num_classes=self.num_classes)
-
-        if self.mixup:
-            return self.apply_mixup(images, labels)
-        elif self.cutmix:
-            return self.apply_cutmix(images, labels)
-        else:
-            return images, labels
-
-    def apply_mixup(self, images, labels):
-        lam = np.random.beta(self.alpha, self.alpha)
-        indices = np.random.permutation(len(images))
-        x1, x2 = images, images[indices]
-        y1, y2 = labels, labels[indices]
-        mixed_x = lam * x1 + (1 - lam) * x2
-        mixed_y = lam * y1 + (1 - lam) * y2
-        return mixed_x, mixed_y
-
-    def apply_cutmix(self, images, labels):
-        lam = np.random.beta(self.alpha, self.alpha)
-        indices = np.random.permutation(len(images))
-        x1, x2 = images, images[indices]
-        y1, y2 = labels, labels[indices]
-
-        h, w = self.img_size
-        cx = np.random.randint(w)
-        cy = np.random.randint(h)
-        cut_w = int(w * np.sqrt(1 - lam))
-        cut_h = int(h * np.sqrt(1 - lam))
-        x1_1 = np.clip(cx - cut_w // 2, 0, w)
-        y1_1 = np.clip(cy - cut_h // 2, 0, h)
-        x2_1 = np.clip(cx + cut_w // 2, 0, w)
-        y2_1 = np.clip(cy + cut_h // 2, 0, h)
-
-        x1[:, y1_1:y2_1, x1_1:x2_1, :] = x2[:, y1_1:y2_1, x1_1:x2_1, :]
-        lam = 1 - ((x2_1 - x1_1) * (y2_1 - y1_1) / (w * h))
-        mixed_y = lam * y1 + (1 - lam) * y2
-
-        return x1, mixed_y
-
-train_gen = DiceDataGenerator(X_train, y_train, BATCH_SIZE, IMG_SIZE, NUM_CLASSES, mixup=USE_MIXUP, cutmix=USE_CUTMIX, alpha=ALPHA)
-val_gen = DiceDataGenerator(X_val, y_val, BATCH_SIZE, IMG_SIZE, NUM_CLASSES, shuffle=False, augment=False)
-
-checkpoint_path = os.path.join(MODEL_SAVE_PATH, f"best-dice-model-trial-{TRIAL}.keras")
+val_generator = datagen.flow_from_directory(
+    TRAIN_IMAGES_DIR,
+    target_size=IMG_SIZE,
+    batch_size=BATCH_SIZE,
+    class_mode='categorical',
+    subset='validation',
+    shuffle=False
+)
 
 if os.path.exists(saved_model):
     print(f"Ładowanie istniejącego modelu z: {saved_model}")
@@ -144,20 +84,38 @@ else:
 
     x = base_model.output
     x = GlobalAveragePooling2D()(x)
-    x = Dense(512, activation='relu', kernel_regularizer=l2(0.002))(x)
+    x = Dense(128, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.001))(x)
     x = Dropout(0.5)(x)
-    predictions = Dense(NUM_CLASSES, activation='softmax')(x)
-    model = Model(inputs=base_model.input, outputs=predictions)
+    output = Dense(NUM_CLASSES, activation='softmax')(x)
 
-model.compile(optimizer=Adam(learning_rate=1e-4), loss='categorical_crossentropy', metrics=['accuracy'])
+    model = Model(inputs=base_model.input, outputs=output)
 
+model.compile(optimizer=Adam(learning_rate=1e-4),
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
+
+y_train_labels = train_generator.classes
+class_weights = compute_class_weight(
+    class_weight='balanced',
+    classes=np.unique(y_train_labels),
+    y=y_train_labels
+)
+class_weights = dict(enumerate(class_weights))
+
+checkpoint_path = os.path.join(MODEL_SAVE_PATH, f"best-dice-model-trial-{TRIAL}.keras")
 callbacks = [
-    EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True),
+    EarlyStopping(monitor='val_loss', patience=8, restore_best_weights=True),
     ModelCheckpoint(checkpoint_path, monitor='val_loss', save_best_only=True),
-    ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=5, min_lr=1e-6, verbose=1)
+    ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, min_lr=1e-6, verbose=1)
 ]
 
-history = model.fit(train_gen, validation_data=val_gen, epochs=EPOCHS, callbacks=callbacks)
+history = model.fit(
+    train_generator,
+    validation_data=val_generator,
+    epochs=EPOCHS,
+    callbacks=callbacks,
+    class_weight=class_weights
+)
 
 model.save(os.path.join(MODEL_SAVE_PATH, f"trial-{TRIAL}.keras"))
 
@@ -178,12 +136,4 @@ plt.clf()
 with open(os.path.join(RAPORT_SAVE_PATH, f'history/trial-{TRIAL}.json'), 'w') as f:
     json.dump(history.history, f)
 
-with open(os.path.join(RAPORT_SAVE_PATH, f'class/trial-{TRIAL}.json'), 'w') as f:
-    json.dump(class_to_idx, f)
-
-try:
-    shutil.copy(__file__, os.path.join(RAPORT_SAVE_PATH, f'script/trial-{TRIAL}.py'))
-except NameError:
-    pass
-
-print("Trening zakończony.")
+print("✅ Trening zakończony.")
