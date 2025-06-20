@@ -93,5 +93,5 @@ if __name__ == "__main__":
         output_path = os.path.join(RAPORT_PATH, f"object-{i+1}-gradcam.png")
         display_gradcam(crop_bgr, heatmap, output_path)
 
-        print(f"➤ Obiekt {i+1}: klasa {class_id}, pewność {confidence:.2f}")
-        print(f"  Grad-CAM zapisany do: {output_path}")
+        print(f" Obiekt {i+1}: klasa {class_id}, pewność {confidence:.2f}")
+        print(f" Grad-CAM zapisany do: {output_path}")

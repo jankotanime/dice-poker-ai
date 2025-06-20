@@ -136,4 +136,4 @@ plt.clf()
 with open(os.path.join(RAPORT_SAVE_PATH, f'history/trial-{TRIAL}.json'), 'w') as f:
     json.dump(history.history, f)
 
-print("✅ Trening zakończony.")
+print("Trening zakończony.")
