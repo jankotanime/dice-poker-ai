@@ -1,0 +1,30 @@
+def player_move(table, money):
+  print("Aktualna stawka:", table)
+  print("Twój portfel:", )
+  print("q - wyjdź")
+  print("p - pass")
+  print("v - va baque")
+  print("b - podbij")
+
+  while True:
+    cmd = input("Co chcesz zrobić?")
+    match cmd:
+      case 'q':
+        return
+      case 'p':
+        return 0
+      case 'v':
+        return money
+      case 'b':
+        while True:
+          amount = input("Podaj kwote: ")
+          try:
+            amount = int(amount)
+          except ValueError:
+            print("Błąd! Podany int")
+            continue
+          if (isinstance(amount, int) and amount <= money and amount > 0 and amount >= table):
+            return amount
+          print("Błędna wartość!")
+      
+  
