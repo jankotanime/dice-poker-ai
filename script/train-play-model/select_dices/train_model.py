@@ -4,11 +4,13 @@ from collections import Counter
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier, plot_tree
 import matplotlib.pyplot as plt
+import os
 
 TRIAL = 1
 MODEL_PATH = f"model/play-model/bet/model-1.pkl"
 DATASET_PATH = f"model/play-model/bet/trial-1.pkl"
 RAPORT_PATH = "raport/train-play-model"
+os.makedirs(RAPORT_PATH, exist_ok=True)
 
 with open(DATASET_PATH, "rb") as f:
     X_all, _ = pickle.load(f)
@@ -16,10 +18,17 @@ with open(DATASET_PATH, "rb") as f:
 print(f"Przykład 0 ma shape: {X_all.shape}, typ elementu 0: {type(X_all[0])}, wartość elementu 0: {X_all[0]}")
 
 y_all = np.array([1 if features[0] >= 9.5 else 0 for features in X_all])
-print("Rozkład nowych etykiet y_all:", Counter(y_all))
+print("Rozkład etykiet y_all:", Counter(y_all))
+
 
 def generate_money():
     return np.random.randint(100, 1001)
+
+
+def generate_max_score(features):
+    """Szacujemy maksymalną punktację na podstawie cech."""
+    return features[0] + np.random.uniform(0, 2)
+
 
 def pair_data(X_all, y_all, n_samples=5000):
     paired_X = []
@@ -37,15 +46,17 @@ def pair_data(X_all, y_all, n_samples=5000):
         opp_money = generate_money()
 
         max_bid = min(ai_money, opp_money)
-        if max_bid < 20:
-            initial_bid = 10
-        else:
-            initial_bid = np.random.randint(10, max_bid // 2 + 1)
+        current_bid = np.random.randint(10, max_bid // 2 + 1)
 
-        features = list(ai_features) + list(opp_features) + [
-            ai_money, opp_money,
-            ai_money - opp_money,
-            initial_bid,
+        ai_score_est = generate_max_score(ai_features)
+        opp_score_est = generate_max_score(opp_features)
+
+        features = [
+            ai_money,
+            opp_money,
+            current_bid,
+            ai_score_est,
+            opp_score_est,
         ]
 
         paired_X.append(features)
@@ -66,16 +77,13 @@ print(f"Train accuracy: {acc_train:.2f}")
 print(f"Test accuracy: {acc_test:.2f}")
 
 feature_names = [
-    "ai_best_score_opt", "ai_best_score_thresh", "ai_prob",
-    "ai_score_diff", "ai_unique_vals", "ai_mean", "ai_var",
-    "opp_best_score_opt", "opp_best_score_thresh", "opp_prob",
-    "opp_score_diff", "opp_unique_vals", "opp_mean", "opp_var",
-    "ai_money", "opp_money", "money_diff", "initial_bid"
+    "ai_total_money", "opp_total_money", "current_bid",
+    "ai_max_score", "opp_max_score"
 ]
 
 plt.figure(figsize=(20, 10))
-plot_tree(clf, filled=True, feature_names=feature_names, class_names=["Pass", "Play"])
-plt.title("Drzewo decyzyjne: Czy AI powinno grać?")
+plot_tree(clf, filled=True, feature_names=feature_names, class_names=["Pass", "Raise"])
+plt.title("Drzewo decyzyjne: Czy AI powinno podbić stawkę?")
 plt.savefig(f"{RAPORT_PATH}/decision_tree.png")
 plt.close()
 
@@ -102,6 +110,7 @@ with open(f"{RAPORT_PATH}/report.txt", "w") as f:
     f.write(f"Test accuracy: {acc_test:.2f}\n")
     f.write("Drzewo zapisane jako 'decision_tree.png'\n")
 
+
 def predict_decision():
     idx_ai = np.random.randint(0, len(X_all))
     idx_opp = np.random.randint(0, len(X_all))
@@ -112,26 +121,19 @@ def predict_decision():
     ai_money = generate_money()
     opp_money = generate_money()
     max_bid = min(ai_money, opp_money)
-    if max_bid < 20:
-        initial_bid = 10
-    else:
-        initial_bid = np.random.randint(10, max_bid // 2 + 1)
+    current_bid = np.random.randint(10, max_bid // 2 + 1)
 
-    input_vec = list(ai_features) + list(opp_features) + [
-        ai_money, opp_money,
-        ai_money - opp_money,
-        initial_bid
-    ]
+    ai_score_est = generate_max_score(ai_features)
+    opp_score_est = generate_max_score(opp_features)
 
+    input_vec = [ai_money, opp_money, current_bid, ai_score_est, opp_score_est]
     decision = clf.predict([input_vec])[0]
-    if decision == 1:
-        new_bid = min(ai_money, opp_money)
-        print(f"AI decyduje się grać. Podbija do: {new_bid} zł")
-    else:
-        print(f"AI pasuje. Traci {initial_bid} zł.")
 
-print("Przykładowe dane (pierwsze 5):", X_all[:5])
-print("Rozkład etykiet y_all:", Counter(y_all))
+    if decision == 1:
+        bid = min(max_bid, current_bid * 2)
+        print(f"AI decyduje się grać. Podbija do: {bid} zł")
+    else:
+        print(f"AI pasuje. Traci {current_bid} zł.")
 
 predict_decision()
 
