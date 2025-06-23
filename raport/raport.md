@@ -63,10 +63,18 @@ Przejście na Google Colab okazało się świetną opcją - niedość, że treno
 
 Wyniki były zadowalające: mAP_0.5 (średnia precyzja) na wysokim poziomie (około 98%), mAP_0.5:0.95 (bardziej rygorystyczne mAP_0.5) około 70%, precyzja ponad 95% i recall około 98%. Uznałem, że model yolo jest wytrenowany wystarczająco, ponieważ będzie wykorzystywany tylko do znajdowania obiektów, jednak miałem pewne obawy, ponieważ dataset był dosyć jednolity i bałem się, że przy bardziej wymagających zdjęciach (np. duża odległość kości od aparatu, duży kąt do podłoża) kości będą źle rozpoznawane.
 
+<p align="center">
+  <img src="best-train/yolo-train/train_batch0.jpg" alt="Train batch" />
+</p>
+
 ### Etap 7 - trenowanie rozpoznawania jednej kości na innym datasetcie
 Z gotowym modelem do rozpoznawania kości oraz yolo postanowiłem je przetestować na wstępnej aplikacji. Niestety przy użyciu trochę trudniejszych zdjęć zrobionych przeze mnie model słabo radził sobie z rozpoznawaniem kości wyciętych przez yolo. Z tego powodu postanowiłem rozpocząć trenowanie aktualnego modelu na trochę trudniejszym datasetcie, przerobionym przez mój model yolo.
 
 Po kilku treningach wyniki val_acc były ciągle na poziomie 100%, jednak w rzeczywistym wykorzystaniu modelu jego dokładność była bardzo niska - cały czas rozpoznawał 4 i 6 jako 5. Postanowiłem przefiltrować datasety. Usunąłem obrazy które mogły powodować gorsze wyniki. Oprócz tego okazało się, że było parę błędnych obrazów - niektóre były pustymi zdjęciami, ale było też kilka błędnych kości przypisanych do odpowiedniego labelu. Ponownie nauczyłem model na dwóch skryptach treningowych. Dokładność dalej oscylowała na poziomie 100%, ale w praktyce model wciąż przypisywał 4 i 6 do 5.
+
+<p align="center">
+  <img src="best-train/dice-model/one-dice/acc-image.png" alt="Acc image" />
+</p>
 
 ### Etap 8 - sprawdzanie modelu za pomocą Grad-CAM dodanie OpenCV
 Dla sprawdzenia z czego wynika błędne rozpoznawanie kości skorzystałem z Grad-CAM. Okazało się, że model patrzy tylko na część kości - najczęściej na róg. Moim zdaniem model nauczył się z poprzednich datasetów schematu, które oznacza rozpoznanie kości w pewnych miejscach, nie zwracając uwagi na najbardziej szczególny aspekt - oczka po środku. Po sprawdzeniu wielu zdjęć zdałem sobie sprawę, że gdy kości maja 4 lub 6 kości model nie patrzy na środek profilu, co powodowało główny problem błędnego rozpoznawania.
@@ -76,6 +84,10 @@ Próbowałem ograniczyć model do bezmyślnego wybierania kości z pięcioma ocz
 Postanowiłem więc wykorzystać najprostszą metodę - analiza obrazu bez nauki maszynowej. Metoda ta nie była w 100% skuteczna, więc postanowiłem wykorzystać hybrydę modelu .keras i OpenCV, które okazały się bardzo skuteczne. Wykorzystując logikę i rozpoznawanie kości przez obie metody, doszedłem do zadowalającego wyniku 80% dokładności (7 błędów na 35 kości, testy aplikacji były wykonywane już ręcznie).
 
 Dodatkowo podczas tego etapu zauważyłem, że model yolo rozpoznaje tylko górną część kości, a problem z nakładającymi się boxami naprawiłem zwykłym sprawdzeniem punktów bloczków. Dzięki temu mogłem spokojnie przejść do następnego etapu - stworzenie nowego modelu do wygrywania w kościanego pokera.
+
+<p align="center">
+  <img src="check-model/object-3-gradcam.png" alt="Gradcam" />
+</p>
 
 ### Etap 9 - stworzenie pierwowzoru aplikacji
 Gdy miałem już stworzone modele do rozpoznawania zdjęć postanowiłem napisać szablon aplikacji. Chciałem, żeby to była prosta aplikacja konsolowa, więc nie korzystałem z żadnego frameworka. Do obliczania wyniku wykorzystałem funkcję z dawnego projektu, który miał ten sam temat przewodni. Celem aplikacji była możliwość grania przez jedną osobę z botem, którego miałem zamiar teraz wytrenować.
@@ -90,6 +102,10 @@ Dodatkowo sprawdziłem działanie algorytmu - przy pierwszym rzucie wszystkimi k
 
 ### Etap 11 - drzewo decyzyjne sprawdzający opłacalność gry
 Stworzyłem prosty klasyfikator decyzyjny, mający na celu ocenę, czy agent powinien podbić stawkę w danej rundzie gry. Dane treningowe wygenerowano syntetycznie poprzez parowanie istniejących przykładów i losowanie dodatkowych parametrów, takich jak aktualna pula pieniędzy oraz szacowana maksymalna punktacja. Model oparto na drzewie decyzyjnym, uczonym na pięciu cechach: zasobach finansowych obu graczy, aktualnej stawce oraz przewidywanych wynikach punktowych. Uzyskano dokładność klasyfikacji na poziomie 100% dla zbioru treningowego oraz 94% dla testowego. Model pozwala wizualnie interpretować decyzje agenta oraz analizować wpływ poszczególnych cech na jego strategię licytacyjną.
+
+<p align="center">
+  <img src="train-play-model/decision_tree.png" alt="Decision tree" />
+</p>
 
 ### Etap 12 - finalizacja aplikacji
 Ostatnim etapem było dokończenie aplikacji. Dodałem algorytmy i modele oraz usprawniłem całą strukturę. Testując aplikację wszystkie modele osiągały bardzo dobre wyniki co uznałem za sukces aplikacji.
