@@ -76,7 +76,14 @@ Dodatkowo podczas tego etapu zauważyłem, że model yolo rozpoznaje tylko górn
 
 ### Etap 9 - stworzenie pierwowzoru aplikacji
 Gdy miałem już stworzone modele do rozpoznawania zdjęć postanowiłem napisać szablon aplikacji. Chciałem, żeby to była prosta aplikacja konsolowa, więc nie korzystałem z żadnego frameworka. Do obliczania wyniku wykorzystałem funkcję z dawnego projektu, który miał ten sam temat przewodni. Celem aplikacji była możliwość grania przez jedną osobę z botem, którego miałem zamiar teraz wytrenować.
- 
+
+### Etap 10 - skrypt oceniający kości na ręce
+Pierwotnie rozważałem implementację agenta decyzyjnego lub drzewa decyzyjnego służącego do wyboru optymalnego zestawu kości do przerzutu. Ostatecznie jednak zdecydowałem się na opracowanie prostszego w realizacji skryptu analitycznego, działającego w czasie rzeczywistym.
+
+Zaprojektowany algorytm analizuje wszystkie możliwe kombinacje przerzutów, obliczając dla każdej z nich oczekiwaną wartość punktową. Na tej podstawie wybierana jest strategia maksymalizująca średni wynik. Dodatkowo, skrypt uwzględnia analizę ryzyka poprzez ocenę minimalnego wyniku, jaki można uzyskać z ustalonym prawdopodobieństwem (trafienie co najmniej jednej konkretnej wartości). 
+
+Takie podejście umożliwia porównanie wariantów ryzykownych – nastawionych na maksymalizację punktów – z bardziej zachowawczymi strategiami minimalizującymi ryzyko niepowodzenia.
+
 ## Problemy i wyzwania
 ### Transer Learning 
 ~~Pierwszym problemem okazał się transfer learning, na początku ciężko było stabilnie przenieść trening z pierwszego skryptu do drugiego, ale w końcu się udało. Mam nadzieję tylko, że pod koniec będzie to opłacalne i wytrenowanie na tylko jednym datasetcie nie będzie bardziej skuteczne.~~
