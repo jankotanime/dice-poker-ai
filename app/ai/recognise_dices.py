@@ -8,7 +8,7 @@ import json
 from PIL import Image
 
 YOLO_MODEL_PATH = 'model/dice-model/best-train/best-yolo.pt'
-CLASSIFIER_MODEL_PATH = 'model/dice-model/one-dice-parsed/best-dice-model-trial-14.keras'
+CLASSIFIER_MODEL_PATH = 'model/dice-model/best-train/best-dice-model.keras'
 CLASS_NAMES_PATH = 'app/input-data/class.json'
 
 print("Ładowanie YOLO...")
