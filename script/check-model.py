@@ -11,7 +11,7 @@ from PIL import Image
 
 MODEL_PATH = 'model/dice-model/one-dice-parsed/trial-15.keras'
 YOLO_PATH = 'model/dice-model/best-train/best-yolo.pt'
-IMAGE_PATH = 'app/input-data/image-3.png'
+IMAGE_PATH = 'app/input-data/image-6.png'
 RAPORT_PATH ='raport/check-model'
 IMG_SIZE = (224, 224)
 LAST_CONV_LAYER = 'Conv_1'

@@ -1,0 +1,13 @@
+Wykryto 6 obiektów.
+ Obiekt 1: klasa 0, pewność 1.00
+ Grad-CAM zapisany do: raport/check-model/object-1-gradcam.png
+ Obiekt 2: klasa 1, pewność 0.68
+ Grad-CAM zapisany do: raport/check-model/object-2-gradcam.png
+ Obiekt 3: klasa 4, pewność 0.87
+ Grad-CAM zapisany do: raport/check-model/object-3-gradcam.png
+ Obiekt 4: klasa 0, pewność 0.99
+ Grad-CAM zapisany do: raport/check-model/object-4-gradcam.png
+ Obiekt 5: klasa 2, pewność 0.89
+ Grad-CAM zapisany do: raport/check-model/object-5-gradcam.png
+ Obiekt 6: klasa 2, pewność 0.78
+ Grad-CAM zapisany do: raport/check-model/object-6-gradcam.png
