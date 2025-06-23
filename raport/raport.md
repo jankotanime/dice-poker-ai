@@ -7,41 +7,54 @@
 1. [Spis treści](#spis-treści)
 2. [Wprowadzenie](#wprowadzenie)
 3. [Etapy realizacji](#etapy-realizacji)
-3. [Etap 1](#etap-1---przygotowanie-do-projektu)
-4. [Etap 2](#etap-2)
-5. [Etap 3](#etap-3)
-6. [Etap 4](#etap-4)
-10. [Tesotowanie](#)
-11. [Funkcjonalności](#)
-12. [Problemy i wyzwania](#)
-13. [Podsumowanie](#)
-14. [Załączniki](#załączniki)
+4. [Etap 1 - przygotowanie do projektu](#etap-1---przygotowanie-do-projektu)
+5. [Etap 2 - przygotowanie środowiska](#etap-2---przygotowanie-środowiska)
+6. [Etap 3 - przemyślenie planu działania](#etap-3---przemyślenie-planu-działania)
+7. [Etap 4 - trenowanie rozpoznawania jednej kości](#etap-4---trenowanie-rozpoznawania-jednej-kości)
+8. [Etap 5 - trenowanie rozpoznawania lokalizacji kości dzięki yolo](#etap-5---trenowanie-rozpoznawania-lokalizacji-kości-dzięki-yolo)
+9. [Etap 6 - trenowanie yolo na Google Colab](#etap-6---trenowanie-yolo-na-google-colab)
+10. [Etap 7 - trenowanie rozpoznawania jednej kości na innym datasetcie](#etap-7---trenowanie-rozpoznawania-jednej-kości-na-innym-datasetcie)
+11. [Etap 8 - sprawdzanie modelu za pomocą Grad-CAM dodanie OpenCV](#etap-8---sprawdzanie-modelu-za-pomocą-grad-cam-dodanie-opencv)
+12. [Etap 9 - stworzenie pierwowzoru aplikacji](#etap-9---stworzenie-pierwowzoru-aplikacji)
+13. [Etap 10 - skrypt oceniający kości na ręce](#etap-10---skrypt-oceniający-kości-na-ręce)
+14. [Etap 11 - drzewo decyzyjne sprawdzający opłacalność gry](#etap-11---drzewo-decyzyjne-sprawdzający-opłacalność-gry)
+15. [Etap 12 - finalizacja aplikacji](#etap-12---finalizacja-aplikacji)
+16. [Funkcjonalności](#funkcjonalności)
+17. [Problemy i wyzwania](#problemy-i-wyzwania)
+18. [Podsumowanie](#podsumowanie)
 
 ## Wprowadzenie
 ### Opis projektu
-...
+Projekt "Dice Poker AI" jest inteligentnym systemem wspomagającym grę w kościanego pokera. System wykorzystuje zaawansowane technologie, takie jak uczenie maszynowe, analize obrazu oraz algorytmy decyzyjne, aby rozpoznawać kości na podstawie zdjęć, oceniać strategię gry oraz podejmować decyzje licytacyjne. Projekt łączy różne podejścia, w tym modele oparte na YOLO, Grad-CAM, OpenCV oraz frameworku .keras, aby zapewnić kompleksowe rozwiązanie.
+
+
 ### Cel projektu
-Celem projektu jest stworzenie programu zdolnego do klasyfikacji kości do gry na podstawie obrazu, a następnie oszacowania opłacalności gry. Program powinien mieć zdolność podejmowania decyzji o ryzyku w zależności od warunków otoczenia.
+
+Celem projektu jest opracowanie programu zdolnego do:
+1. **Klasyfikacji kości do gry** na podstawie obrazu, z wykorzystaniem uczenia maszynowego.
+2. **Oceny opłacalności gry**, uwzględniając ryzyko i warunki otoczenia.
+3. **Podejmowania decyzji** dotyczących strategii gry, takich jak wybór kości do przerzutu czy podbijanie stawki w licytacji.
+
 
 ## Etapy realizacji
 ### Etap 1 - przygotowanie do projektu
-Prace rozpocząłem od wyboru technologii, w której zrealizuję projekt. Zdecydowałem się na Pythona ze względu na szeroki ekosystem bibliotek oraz moje doświadczenie z tą technologią. Projekt realizowałem w środowisku WSL2 na systemie Windows 11, w wersji Pythona 3.10.12. Główną biblioteką używaną do budowy modelu był Keras.
+Prace rozpocząłem od wyboru technologii, w której zrealizuję projekt. Zdecydowałem się na Pythona ze względu na szeroki ekosystem bibliotek oraz moje doświadczenie z tą technologią. Projekt realizowałem w środowisku WSL2 na systemie Windows 11, w wersji Pythona 3.10.12.
 
 ### Etap 2 - przygotowanie środowiska
-Skorzystałem z ogólnodostępnych datasetów zdjęć kości do gry. Zebrałem około 2000 zdjęć przedstawiających różne układy kostek z różnych perspektyw [zobacz załączniki](#załączniki). Następnie przygotowałem strukturę projektu oraz odpowiednio skonfigurowałem `.gitignore`.
+Skorzystałem z ogólnodostępnych datasetów zdjęć kości do gry. Zebrałem około 3000 zdjęć przedstawiających różne układy kostek z różnych perspektyw. Następnie przygotowałem strukturę projektu oraz odpowiednio skonfigurowałem `.gitignore`.
 
 ### Etap 3 - przemyślenie planu działania
 W pierworodnym planie model miał rozpoznawać z całego zdjęcia jakie kości zostały wyrzucone, jednak w trakcie wykonywania go z każdym krokiem rodziły się nowe problemy. Ciągłe przenoszenie modelu poprzez transfer learning powodował, że model zaczynał się gubić, a ciągłe wykładnicze dokładanie liczby klas nie mogło się powieść przy tak ograniczonym datasetcie.
 
-Po ustaleniu tego czego się nauczyłem i jakie są największe problemy mojego modelu uznałem, że muszę inaczej podejść do aktualnych przeciwności. Największym błędem było staranie się przypisania każdej konfugiracji odpowiedniej klasie - postanowiłem skorzystać z yolo, aby wycięło każdą kość ze zdjęcia po czym inny stworzony do tego model będzie klasyfikował jaka jest to kość.
+Po ustaleniu tego czego się nauczyłem i jakie są największe problemy mojego modelu uznałem, że muszę inaczej podejść do aktualnych przeciwności. Największym błędem było staranie się przypisania każdej konfigiracji odpowiedniej klasie - postanowiłem skorzystać z yolo, aby wycięło każdą kość ze zdjęcia po czym inny stworzony do tego model będzie klasyfikował jaka jest to kość.
 
 ### Etap 4 - trenowanie rozpoznawania jednej kości
-Na początku chciałem skorzystać z prelearningu, ale zdjęcie kości z tłem utrudniało całą pracę. Dzięki temu, że jeden z moich datasetów był typu PASCAL VOC mogłem przyciąć wszystkie zdjęcia z tego datasetu (około 1200), a następnie uczyć model jaka to jest kość. Okazało się to sukcesem, ponieważ val_acc od 10 epoki oscylowało na poziomie 99-100%. Mimo tak wczesnych świetnych wyników model dalej się uczył i wartość val_loss ciągle spadała. 
+Na początku chciałem skorzystać z prelearningu, ale obecność tła na zdjęciach komplikowała proces uczenia. Dzięki temu, że jeden z moich datasetów był typu PASCAL VOC mogłem przyciąć wszystkie zdjęcia z tego datasetu (około 1200), a następnie uczyć model jaka to jest kość. Okazało się to sukcesem, ponieważ val_acc od 10 epoki oscylowało na poziomie 99-100%. Mimo tak wczesnych świetnych wyników model dalej się uczył i wartość val_loss ciągle spadała. 
 
 Model ten został stworzony na podstawie skryptu trial-5. Wykorzystywał MobileNetV2 z częściowo odblokowanymi warstwami, do których dodana jest warstwa gęsta i dropout, augmentację typu Mixup i CutMix. Pomimo zawartego early stopping model uczył się aż do maksymalnej (100) epoki. Przy tak dobrych wynikach uznałem, że nie są potrzebne kolejne eksperymenty z augmentacją i zachowałem ten model jako najlepszy.
 
 ### Etap 5 - trenowanie rozpoznawania lokalizacji kości dzięki yolo
-W tym etapie postanowiłem nauczyć model rozpoznawania lokalizacji kości za pomocą yolo. Pobrałem repozytorium yolo oraz utworzyłem parę skryptów, żeby pozwolić i ułatwić sobie pracę z nową biblioteką. Rozpącząłem naukę modelu dla odpowiedniego datasetu skryptem `yolo-train-run.pl`. Niestety przez brak karty NVIDIA musiałem korzystać z CPU i doprowadziło to do krytycznej temperatury, więc postanowiłem zakończyć naukę na 31 epoce. Pomimo wczesnego zakończenia rezultaty detekcji były bardzo zadowalające, chociaż zdarzały się błedy - najczęstszym z nich była wielokrotna detekcja jednej kości. 
+W tym etapie postanowiłem nauczyć model rozpoznawania lokalizacji kości za pomocą yolo. Pobrałem repozytorium yolo oraz utworzyłem parę skryptów, żeby pozwolić i ułatwić sobie pracę z nową biblioteką. Rozpącząłem naukę modelu dla odpowiedniego datasetu. Niestety przez brak karty NVIDIA musiałem korzystać z CPU i doprowadziło to do krytycznej temperatury, więc postanowiłem zakończyć naukę na 31 epoce. Pomimo wczesnego zakończenia rezultaty detekcji były bardzo zadowalające, chociaż zdarzały się błedy - najczęstszym z nich była wielokrotna detekcja jednej kości. 
 
 Model radził sobie bardzo dobrze z innymi datasetami, a także ze zdjęciami wielu kości, chociaż spodziewałem się, że będzie to sprawiać większy problem i mam nadzieję, że następne dotrenowanie nie spowoduje utraty tej umiejętności. Po głębszym zastanowieniu doszedłem do wniosku, że model musi być dotrenowany, ale nie będę tego robić na swoim urządzeniu - skorzystałem z darmowej chmury - postawiłem na Google Colab ze względu na prostą konfigurację.
 
@@ -81,20 +94,45 @@ Stworzyłem prosty klasyfikator decyzyjny, mający na celu ocenę, czy agent pow
 ### Etap 12 - finalizacja aplikacji
 Ostatnim etapem było dokończenie aplikacji. Dodałem algorytmy i modele oraz usprawniłem całą strukturę. Testując aplikację wszystkie modele osiągały bardzo dobre wyniki co uznałem za sukces aplikacji.
 
+## Funkcjonalności
+
+1. **Rozpoznawanie kości**:
+   - Model klasyfikuje kości na podstawie obrazu, wykorzystując hybrydę metod opartych na uczeniu maszynowym (.keras) oraz analizie obrazu (OpenCV).
+   - Dokładność rozpoznawania wynosi około 80% w testach aplikacji.
+
+2. **Lokalizacja kości**:
+   - Model YOLO identyfikuje położenie kości na zdjęciach, osiągając wysoką precyzję (mAP_0.5: 98%).
+
+3. **Ocena strategii gry**:
+   - Skrypt analityczny ocenia optymalny zestaw kości do przerzutu, uwzględniając ryzyko i maksymalizację punktów.
+
+4. **Decyzje licytacyjne**:
+   - Drzewo decyzyjne ocenia opłacalność podbijania stawki w grze, wizualizując wpływ poszczególnych cech na decyzje.
+
+5. **Aplikacja konsolowa**:
+   - Umożliwia grę z botem, który podejmuje decyzje na podstawie wytrenowanych modeli.
+
+6. **Grad-CAM**:
+   - Narzędzie do analizy błędów modelu, pozwalające zrozumieć, które części obrazu są kluczowe dla decyzji modelu.
+
+| Funkcja              | Model                 | Dokładność    |
+| -------------------- | --------------------- | ------------- |
+| Rozpoznawanie kości  | MobileNetV2 + OpenCV  | \~80%         |
+| Lokalizacja          | YOLOv5                | mAP\_0.5: 98% |
+| Decyzja o przerzucie | Algorytm heurystyczny | EV: +2.45 pkt |
+| Decyzje licytacyjne  | Drzewo decyzyjne      | 94% test acc  |
+
+
 ## Problemy i wyzwania
-### Transer Learning 
-~~Pierwszym problemem okazał się transfer learning, na początku ciężko było stabilnie przenieść trening z pierwszego skryptu do drugiego, ale w końcu się udało. Mam nadzieję tylko, że pod koniec będzie to opłacalne i wytrenowanie na tylko jednym datasetcie nie będzie bardziej skuteczne.~~
-
-### Zbyt mały dataset
-Pomimo połączenia 4 datasetów i posiadaniu w sumie 4500 obrazów była to zbyt mała ilość przez co ai często się myliła.
-
-### Zdjęcia pod kątem
-~~Dużym wyzwaniem okazało się rozpoznawanie kostek na zdjęciach wykonywanych pod kątem. Z uwagi na znaczne obniżenie dokładności dla kątów około 45°, planuję dalsze trenowanie modelu z uwzględnieniem tych trudniejszych ujęć. W przypadku, gdy ostateczny model będzie miał poważne problemy z rozpoznawaniem kości przy kątach nawet około 22,5°, rozważę wytrenowanie osobnego modelu na danych z dodatkowymi etykietami wysokości. Nie rozpocząłem nauki z tego poziomu od razu, aby uniknąć nieprawidłowego trenowania na dominującym w zbiorze materiale wykonanym z góry. Zamiast tego, skorzystałem z możliwości augmentacji, aby zwiększyć różnorodność danych wejściowych.~~
-
 ### Usunięty zapis modelu
 Podczas pracy z repozytorium Git doszło do przypadkowego usunięcia zapisanych modeli z etapów 3 i 4, co uniemożliwiło ich ponowne wykorzystanie. Rozpocząłem trenowanie nowego modelu na tych samych etykietach i pierwszy wynik był słabszy aż o około 30% - dokładność spadła o 4%. Mimo chęci przejścia do następnego etapu z gorszym wynikiem, zdecydowałem się ponownie wytrenować model na najlepszych dostępnych wcześniej etykietach. To okazało się sukcesem - prawdopodobnie wcześniej skorzystałem ze złego skryptu i wynik nowego modelu nie tylko nie był gorszy, ale też lepszy o 4% względem poprzedniego. Można zatem powiedzieć, że nie ma tego złego co na dobre nie wyszło.
 
 ### Problem 5 oczek
 Pomimo tego, że model osiągnął 100% val_accuracy i świetnie sobie radził na danych treningowych to rzeczywiste rozpoznawanie kości było bardzo słabe. Wszystkie kości z 4 i 6 oczkami uznawał za kości z 5 oczkami, przez co rzeczywista dokładność nie mogła przerosnąć 67%. Prawdopodobnym problemem było wyuczenie się modelu zwracania uwagi na niedecydujące elementy, a także zbyt mały dataset. Po wielu próbach i zmianach problem ten nie został rozwiązany tylko bardziej ominięty - wykorzystując metodę analizy obrazu powstała hybryda do wspólnego rozpoznawania kości z częściowo działającym modelem .keras.
 
-## Załączniki
+## Podsumowanie
+Projekt "Dice Poker AI" zrealizował założone cele, tworząc aplikację zdolną do rozpoznawania kości, oceny strategii gry oraz podejmowania decyzji licytacyjnych. Pomimo napotkanych problemów, takich jak błędne rozpoznawanie kości z 4 i 6 oczkami, udało się osiągnąć zadowalające wyniki dzięki zastosowaniu hybrydowych metod oraz analizy obrazu.
+
+Największym sukcesem projektu jest stworzenie kompleksowego systemu, który łączy różne technologie, takie jak YOLO, Grad-CAM, OpenCV oraz modele oparte na .keras. Aplikacja konsolowa pozwala na interakcję z botem, co stanowi praktyczne zastosowanie opracowanych modeli.
+
+Na całe środowisko składa się 57 folderów i 416 plików w tym: 75 plików pythonowych, 150 obrazów, 67 zapisanych modeli .keras i 112 plików .json. Podczas pracy nad projektem nauczyłem się wielu rzeczy, skorzystałem z wiedzy którą posiadłem na zajęciach, ale także wykorzystałem rzeczy których nie było. Pisanie i eksperymentowanie z róznymi modelami sprawiało mi dużą przyjemność. Nauczyłem się także, że lepiej wcześniej zorganizować cały plan projektowy, ponieważ często działanie "na żywioł" skutkuje potrzebą cofnięcia się o wiele kroków do tyłu.
