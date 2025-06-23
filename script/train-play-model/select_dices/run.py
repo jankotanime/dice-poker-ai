@@ -16,11 +16,11 @@ def evaluate_hand_with_threshold(hand, min_prob=1/6):
 
     return best_mask_opt, best_score_opt, best_mask_thresh, best_score_thresh, prob
 
-print_results(*evaluate_hand_with_threshold([2,3,4,4,6]), [2,3,4,4,6])
-print_results(*evaluate_hand_with_threshold([1,3,4,5,6]), [1,3,4,5,6])
-print_results(*evaluate_hand_with_threshold([2,3,4,5,6]), [2,3,4,5,6])
-print_results(*evaluate_hand_with_threshold([2,3,4,5,1]), [2,3,4,5,1])
-print_results(*evaluate_hand_with_threshold([1,2,5,5,1]), [1,2,5,5,1])
-print_results(*evaluate_hand_with_threshold([2,2,4,4,1]), [2,2,4,4,1])
-print_results(*evaluate_hand_with_threshold([1,1,1,1,1]), [1,1,1,1,1])
-print_results(*evaluate_hand_with_threshold([6,6,6,6,6]), [6,6,6,6,6])
+# print_results(*evaluate_hand_with_threshold([2,3,4,4,6]), [2,3,4,4,6])
+# print_results(*evaluate_hand_with_threshold([1,3,4,5,6]), [1,3,4,5,6])
+# print_results(*evaluate_hand_with_threshold([2,3,4,5,6]), [2,3,4,5,6])
+# print_results(*evaluate_hand_with_threshold([2,3,4,5,1]), [2,3,4,5,1])
+# print_results(*evaluate_hand_with_threshold([1,2,5,5,1]), [1,2,5,5,1])
+# print_results(*evaluate_hand_with_threshold([2,2,4,4,1]), [2,2,4,4,1])
+# print_results(*evaluate_hand_with_threshold([1,1,1,1,1]), [1,1,1,1,1])
+# print_results(*evaluate_hand_with_threshold([6,6,6,6,6]), [6,6,6,6,6])
