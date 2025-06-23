@@ -1,0 +1,4 @@
+=== Decision Tree Report ===
+Train accuracy: 0.99
+Test accuracy: 0.99
+Drzewo zapisane jako 'decision_tree.png'
