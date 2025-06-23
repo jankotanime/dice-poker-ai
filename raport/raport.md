@@ -30,16 +30,6 @@ Prace rozpocząłem od wyboru technologii, w której zrealizuję projekt. Zdecyd
 ### Etap 2 - przygotowanie środowiska
 Skorzystałem z ogólnodostępnych datasetów zdjęć kości do gry. Zebrałem około 2000 zdjęć przedstawiających różne układy kostek z różnych perspektyw [zobacz załączniki](#załączniki). Następnie przygotowałem strukturę projektu oraz odpowiednio skonfigurowałem `.gitignore`.
 
-<!-- ### Etap 3 - trenowanie rozpoznawania jednej kości
-~~Celem tego etapu było stworzenie modelu AI, który rozpoznaje liczbę oczek (1–6) na pojedynczej kostce. Eksperymentowałem z różnymi parametrami augmentacji oraz architektury CNN. Na podstawie wcześniejszych prób, które zakończyły się błędem zarządzania plikami i utratą modeli (Trials 9 i 10) - [zobacz problem](#usunięty-zapis-modelu)- wybrałem dwa najlepsze warianty: Trial 13 i Trial 14. Wersja Trial 13 była bardziej stabilna, natomiast Trial 14 wyróżniała się bardziej agresywną augmentacją. Zakładając, że model jest na etapie wstępnego uczenia (prelearning) uznałem, że Trial 14 będzie lepszym wyborem, ponieważ trenowałem go na ograniczonym zbiorze danych, a dalsze etapy powinny stabilizować model.~~
-
-~~W trialu 14 zastosowałem dwie warstwy Conv2D (32 i 64 filtry), dropout na poziomie 0.3 oraz lekką augmentację. Ten wariant okazał się najskuteczniejszy – zarówno accuracy na zbiorze walidacyjnym, jak i treningowym rosło znacząco bez oznak przeuczenia. Najwyższa osiągnięta dokładność wyniosła 54,2%. Po zakończeniu treningu przystąpiłem do kolejnego etapu, wykorzystując wytrenowany model jako punkt startowy.~~
-
-### Etap 4 - trenowanie rozpoznawania dwóch kości
-~~Etap 4 miał na celu kontynuację nauki modelu wytrenowanego w Etapie 3, tym razem na bardziej wymagającym zbiorze danych. Nowy zbiór zawierał 800 zdjęć przedstawiających dwie kości sfotografowane z trudnej perspektywy - pod kątem 45° z boku. Taka perspektywa powodowała, że na każdej kości widoczne były jednocześnie trzy ścianki [zobacz problem](#zdjęcia-pod-kątem). Dla 21 klas taka liczba przykładów była bardzo ograniczona co stanowiło dodatkowe wyzwanie.~~
-
-~~W celu poprawy jakości klasyfikacji zastosowałem transfer learning z poprzedniego etapu z modelem MobileNetV2 oraz znacznie bardziej zaawansowaną augmentację, rozszerzoną m.in. o Mixup i CutMix. Najlepszy wynik osiągnąłem w Trial 21 osiągając dokładność: 15.3%, który został napisany na podstawie Trial 12 (dokładność: 14.7%), który był pierwotnym modelem, ale nie został zachowany z powodu błędu wspomnianego w 3 Etapie [zobacz problem](#usunięty-zapis-modelu). Model trenował się stabilnie przez ponad 100 epok, a najlepszy wynik uzyskałem jeszcze przed ukończeniem pełnego treningu, dzięki czemu moje obawy z hiperbolicznymi wynikami zostały zażegnane.Pomimo relatywnie niskiej dokładności, model uznałem za wystarczająco dobry dla danej bazy obrazów, by kontynuować dalsze eksperymenty.~~ -->
-
 ### Etap 3 - przemyślenie planu działania
 W pierworodnym planie model miał rozpoznawać z całego zdjęcia jakie kości zostały wyrzucone, jednak w trakcie wykonywania go z każdym krokiem rodziły się nowe problemy. Ciągłe przenoszenie modelu poprzez transfer learning powodował, że model zaczynał się gubić, a ciągłe wykładnicze dokładanie liczby klas nie mogło się powieść przy tak ograniczonym datasetcie.
 
@@ -83,6 +73,13 @@ Pierwotnie rozważałem implementację agenta decyzyjnego lub drzewa decyzyjnego
 Zaprojektowany algorytm analizuje wszystkie możliwe kombinacje przerzutów, obliczając dla każdej z nich oczekiwaną wartość punktową. Na tej podstawie wybierana jest strategia maksymalizująca średni wynik. Dodatkowo, skrypt uwzględnia analizę ryzyka poprzez ocenę minimalnego wyniku, jaki można uzyskać z ustalonym prawdopodobieństwem (trafienie co najmniej jednej konkretnej wartości). 
 
 Takie podejście umożliwia porównanie wariantów ryzykownych – nastawionych na maksymalizację punktów – z bardziej zachowawczymi strategiami minimalizującymi ryzyko niepowodzenia.
+Dodatkowo sprawdziłem działanie algorytmu - przy pierwszym rzucie wszystkimi kośćmi średni wynik wynosił 9.55, a przy kolejnym rzucie przez AI wynosił 12 punktów. Uważam, że to dobry wynik zwracając uwagę na losowość gry. 
+
+### Etap 11 - drzewo decyzyjne sprawdzający opłacalność gry
+Stworzyłem prosty klasyfikator decyzyjny, mający na celu ocenę, czy agent powinien podbić stawkę w danej rundzie gry. Dane treningowe wygenerowano syntetycznie poprzez parowanie istniejących przykładów i losowanie dodatkowych parametrów, takich jak aktualna pula pieniędzy oraz szacowana maksymalna punktacja. Model oparto na drzewie decyzyjnym, uczonym na pięciu cechach: zasobach finansowych obu graczy, aktualnej stawce oraz przewidywanych wynikach punktowych. Uzyskano dokładność klasyfikacji na poziomie 100% dla zbioru treningowego oraz 94% dla testowego. Model pozwala wizualnie interpretować decyzje agenta oraz analizować wpływ poszczególnych cech na jego strategię licytacyjną.
+
+### Etap 12 - finalizacja aplikacji
+Ostatnim etapem było dokończenie aplikacji. Dodałem algorytmy i modele oraz usprawniłem całą strukturę. Testując aplikację wszystkie modele osiągały bardzo dobre wyniki co uznałem za sukces aplikacji.
 
 ## Problemy i wyzwania
 ### Transer Learning 
