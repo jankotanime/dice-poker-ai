@@ -1,3 +1,5 @@
+import sys
+
 def player_move(table, money):
   print("Aktualna stawka:", table)
   print("Twój portfel:", )
@@ -10,7 +12,7 @@ def player_move(table, money):
     cmd = input("Co chcesz zrobić?")
     match cmd:
       case 'q':
-        return
+        sys.exit(0)
       case 'p':
         return 0
       case 'v':

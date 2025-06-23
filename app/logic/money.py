@@ -1,7 +1,8 @@
 table = 0
 
 def bidUp(amount):
-  if (amount > table):
+  global table
+  if (amount >= table and amount != 0):
     table = amount
     return True
   return False

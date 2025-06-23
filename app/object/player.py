@@ -3,6 +3,8 @@ class Player:
     self.BOT = bot
     self.money = int(money)
     self.onTable = 0
+    self.dices = []
+    self.score = 0
 
   def setMoney(self, money):
     self.money = int(money)
@@ -18,3 +20,15 @@ class Player:
 
   def setOnTable(self, money):
     self.onTable = money  
+
+  def setScore(self, score):
+    self.score = score
+  
+  def getScore(self):
+    return self.score
+  
+  def setDices(self, dices):
+    self.dices = dices
+
+  def getDices(self):
+    return self.dices
