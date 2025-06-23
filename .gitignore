@@ -2,3 +2,8 @@ train/image/
 raport/train-*
 model/
 yolov5/
+
+app/output-data/
+app/input-data/
+
+/**/__pycache__
