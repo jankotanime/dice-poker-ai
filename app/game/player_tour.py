@@ -38,7 +38,7 @@ def player_second_tour(player):
   print("Twoje kości:", player.getDices())
   print("Twój wynik: ", player.getScore())
   if (not player.isBot()):
-    amount = player_move(table, money)
+    amount = player_move(table, money, True)
     
     if (not amount):
       return False
