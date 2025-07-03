@@ -36,3 +36,23 @@ Dice Poker AI is an experimental project developed for the Computational Intelli
 | Betting decision        | Decision tree             | 94% test acc   |
 
 The project is implemented in Python.
+
+## Preview
+### Grad-CAM
+![image](https://github.com/user-attachments/assets/7fe1f558-c975-4237-a83d-cbe70aac4039)
+
+### Dice recognition
+![image](https://github.com/user-attachments/assets/742dcc14-e02b-4c24-8ebb-db5cb78860f5)
+![image](https://github.com/user-attachments/assets/f8da276d-4dbc-49ef-9d84-b5f5b159d567)
+
+![image](https://github.com/user-attachments/assets/60775c2b-258d-4c81-8dfc-8707da783d22)
+![image](https://github.com/user-attachments/assets/ca320031-2bb4-4a47-9eb5-cedee71031cc)
+
+
+### YOLO (Dice localization and image crop) 
+
+<img width="1066" alt="image-before-yolo" src="https://github.com/user-attachments/assets/e82d10b0-e611-44bd-a835-8038888d1935" />
+
+![image](https://github.com/user-attachments/assets/eec36e9f-1fb1-4539-9d09-b64517311699)
+
+
